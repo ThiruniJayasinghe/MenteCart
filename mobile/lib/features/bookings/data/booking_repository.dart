@@ -23,4 +23,9 @@ class BookingRepository {
   Future<Map<String, dynamic>> getBooking(String id) => _api.get('/bookings/$id');
 
   Future<Map<String, dynamic>> cancelBooking(String id) => _api.post('/bookings/$id/cancel');
+
+  Future<void> confirmPayment(String bookingId, String paymentId) =>
+      _api.post('/bookings/$bookingId/confirm-payment', data: {
+        'paymentId': paymentId,
+      });
 }

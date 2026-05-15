@@ -48,19 +48,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
             if (state.checkoutData != null) {
               try {
-                final paymentId =
-                    await PayHereService.startPayment(state.checkoutData!);
+                final bookingId = state.booking['_id'] as String;
+                final paymentId = await PayHereService.startPayment(
+                  state.checkoutData!,
+                );
 
                 if (!ctx.mounted) return;
 
                 if (paymentId != null) {
-                  ScaffoldMessenger.of(ctx).showSnackBar(
-                    SnackBar(
-                      content: Text('Payment successful! ID: $paymentId'),
-                      backgroundColor: Colors.green,
+                  // Confirm payment with backend
+                  context.read<BookingBloc>().add(
+                    BookingPaymentConfirmed(
+                      bookingId: bookingId,
+                      paymentId: paymentId,
                     ),
                   );
-                  ctx.go('/bookings');
                 } else {
                   ScaffoldMessenger.of(ctx).showSnackBar(
                     const SnackBar(
@@ -87,6 +89,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               );
               ctx.go('/bookings');
             }
+          }
+
+          // After payment confirmed successfully
+          if (state is BookingPaymentConfirmSuccess) {
+            ScaffoldMessenger.of(ctx).showSnackBar(
+              const SnackBar(
+                content: Text('Payment successful!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            ctx.go('/bookings');
           }
 
           if (state is BookingFailure) {
@@ -129,7 +142,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                    color: const Color(0xFFE2E8F0)),
+                                  color: const Color(0xFFE2E8F0),
+                                ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(
@@ -144,7 +158,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                         Text(
                                           m['title'],
                                           style: const TextStyle(
-                                              fontWeight: FontWeight.w600),
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
@@ -160,7 +175,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   Text(
                                     'Rs. ${(m['price'] as num) * (m['quantity'] as int)}',
                                     style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -173,8 +189,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               const Text(
                                 'Total',
                                 style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               Text(
                                 'Rs. ${cartState.total.toStringAsFixed(2)}',
@@ -192,7 +209,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           const Text(
                             'Contact details',
                             style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
@@ -201,8 +220,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             decoration: InputDecoration(
                               labelText: 'Phone number',
                               hintText: '07XXXXXXXX',
-                              prefixIcon:
-                                  const Icon(Icons.phone_outlined),
+                              prefixIcon: const Icon(Icons.phone_outlined),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -224,7 +242,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               labelText: 'Address',
                               hintText: 'No. 1, Galle Road',
                               prefixIcon: const Icon(
-                                  Icons.location_on_outlined),
+                                Icons.location_on_outlined,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -242,8 +261,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             decoration: InputDecoration(
                               labelText: 'City',
                               hintText: 'Colombo',
-                              prefixIcon:
-                                  const Icon(Icons.location_city),
+                              prefixIcon: const Icon(Icons.location_city),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -261,7 +279,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           const Text(
                             'Payment method',
                             style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 12),
                           ...[
@@ -287,8 +307,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               onChanged: (v) =>
                                   setState(() => _paymentMethod = v!),
                               title: Text(method['label'] as String),
-                              secondary:
-                                  Icon(method['icon'] as IconData),
+                              secondary: Icon(method['icon'] as IconData),
                               contentPadding: EdgeInsets.zero,
                             ),
                           ),
@@ -303,17 +322,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 color: const Color(0xFFEFF6FF),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                    color: const Color(0xFFBFDBFE)),
+                                  color: const Color(0xFFBFDBFE),
+                                ),
                               ),
                               child: const Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(Icons.info_outline,
-                                          size: 16,
-                                          color: Color(0xFF1D4ED8)),
+                                      Icon(
+                                        Icons.info_outline,
+                                        size: 16,
+                                        color: Color(0xFF1D4ED8),
+                                      ),
                                       SizedBox(width: 6),
                                       Text(
                                         'Sandbox test card',
@@ -343,8 +364,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   padding: const EdgeInsets.all(20),
                   decoration: const BoxDecoration(
                     color: Colors.white,
-                    border: Border(
-                        top: BorderSide(color: Color(0xFFE2E8F0))),
+                    border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
                   ),
                   child: BlocBuilder<BookingBloc, BookingState>(
                     builder: (ctx, state) => SizedBox(
@@ -357,24 +377,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   return;
                                 }
                                 context.read<BookingBloc>().add(
-                                      BookingCheckoutRequested(
-                                        _paymentMethod,
-                                        phone: _phoneController.text
-                                            .trim(),
-                                        address: _addressController.text
-                                            .trim(),
-                                        city:
-                                            _cityController.text.trim(),
-                                      ),
-                                    );
+                                  BookingCheckoutRequested(
+                                    _paymentMethod,
+                                    phone: _phoneController.text.trim(),
+                                    address: _addressController.text.trim(),
+                                    city: _cityController.text.trim(),
+                                  ),
+                                );
                               },
                         style: ElevatedButton.styleFrom(
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           backgroundColor: const Color(0xFF2563EB),
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor:
-                              const Color(0xFF2563EB).withOpacity(0.6),
+                          disabledBackgroundColor: const Color(
+                            0xFF2563EB,
+                          ).withOpacity(0.6),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),

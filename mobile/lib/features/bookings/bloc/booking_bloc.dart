@@ -12,6 +12,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     on<BookingsFetchRequested>(_onFetch);
     on<BookingDetailRequested>(_onDetail);
     on<BookingCancelRequested>(_onCancel);
+    on<BookingPaymentConfirmed>(_onPaymentConfirmed);
   }
 
   Future<void> _onCheckout(BookingCheckoutRequested event, Emitter<BookingState> emit) async {
@@ -67,6 +68,17 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
       add(BookingsFetchRequested());
     } on AppFailure catch (f) {
       emit(BookingFailure(f.message));
+    }
+  }
+
+  Future<void> _onPaymentConfirmed(BookingPaymentConfirmed event, Emitter<BookingState> emit) async {
+    try {
+      await _repo.confirmPayment(event.bookingId, event.paymentId);
+      emit(BookingPaymentConfirmSuccess());
+    } on AppFailure catch (f) {
+      emit(BookingFailure(f.message));
+    } catch (_) {
+      emit(const BookingFailure('Failed to confirm payment'));
     }
   }
 }
