@@ -1,0 +1,18 @@
+# Backend
+node_modules/
+dist/
+.env
+*.env.local
+
+# Flutter
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+
+# General
+.DS_Store
+*.log
+
+.vscode/
